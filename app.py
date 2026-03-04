@@ -1,44 +1,73 @@
 import streamlit as st
 
-st.set_page_config(page_title="MTE Calculator UI", layout="wide")
+# -------------------------
+# Page Configuration
+# -------------------------
+st.set_page_config(
+    page_title="MTE Calculator",
+    layout="centered"
+)
 
-st.title("MTE Calculation Application")
+# -------------------------
+# Mobile Width Styling
+# -------------------------
+st.markdown("""
+    <style>
+        .block-container {
+            max-width: 420px;
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+        }
+        div.stButton > button {
+            border-radius: 8px;
+            height: 45px;
+            font-weight: 600;
+        }
+        .section-card {
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f7f7f7;
+            margin-bottom: 15px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# -------------------------------
-# KEN Search Section
-# -------------------------------
+st.title("MTE Calculator")
 
+# -------------------------
+# KEN Section
+# -------------------------
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("KEN Search")
 
-col1, col2 = st.columns([3, 1])
+ken_number = st.text_input("Enter KEN Number")
 
-with col1:
-    ken_number = st.text_input("Enter KEN Number")
+st.button("Search", use_container_width=True)
 
-with col2:
-    search_ken = st.button("Search")
-
-# Placeholder Electrification Details
 st.markdown("### Electrification Details")
-st.info("Electrification details will appear here (UI placeholder).")
+st.info("Electrification details will appear here.")
 
-# -------------------------------
-# Module Selection Section
-# -------------------------------
+st.markdown('</div>', unsafe_allow_html=True)
 
+# -------------------------
+# Module Selection
+# -------------------------
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("Module Selection")
 
 modules = ["Module A", "Module B", "Module C", "Module D"]
 selected_modules = st.multiselect(
-    "Select One or More Modules",
+    "Select Modules",
     modules
 )
 
-# -------------------------------
-# Replacement Action Section
-# -------------------------------
+st.markdown('</div>', unsafe_allow_html=True)
 
+# -------------------------
+# Replacement Actions
+# -------------------------
 if selected_modules:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.subheader("Replacement Actions")
 
     replacement_actions = {
@@ -51,42 +80,37 @@ if selected_modules:
     selected_actions = []
 
     for module in selected_modules:
-        st.markdown(f"**{module} Replacement Actions**")
-
-        col1, col2 = st.columns([4, 1])
-
-        with col1:
-            action = st.selectbox(
-                f"Select Replacement Action for {module}",
-                replacement_actions[module],
-                key=module
-            )
-
-        with col2:
-            st.button("Search", key=f"search_{module}")
-
+        st.markdown(f"**{module}**")
+        action = st.selectbox(
+            f"Select Replacement Action for {module}",
+            replacement_actions[module],
+            key=module
+        )
         selected_actions.append(action)
 
-# Display Selected Replacement Actions
-if selected_modules:
+    st.button("Search", use_container_width=True)
+
     st.markdown("### Selected Replacement Actions")
     st.write(selected_actions)
 
-# -------------------------------
-# MTE Calculation Section
-# -------------------------------
+    st.markdown('</div>', unsafe_allow_html=True)
 
+# -------------------------
+# MTE Section
+# -------------------------
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("MTE Calculation")
 
-calculate = st.button("Calculate MTE")
-clear = st.button("Clear")
+calculate = st.button("Calculate MTE", use_container_width=True)
+clear = st.button("Clear", use_container_width=True)
 
-# -------------------------------
-# Result Section (UI Placeholder)
-# -------------------------------
+st.markdown('</div>', unsafe_allow_html=True)
 
+# -------------------------
+# Result Section
+# -------------------------
 if calculate:
-    st.markdown("## Result (UI Preview)")
+    st.markdown("## Result")
 
     st.write("**Selected Modules:**", selected_modules)
     st.write("**Selected Replacement Actions:**", selected_actions if selected_modules else [])
@@ -94,7 +118,6 @@ if calculate:
     st.write("**Manpower:** Placeholder")
     st.write("**Overall MTE:** Placeholder")
 
-    # Time Popup Simulation
     with st.expander("View Time Breakdown"):
         st.write("Preparation Time: Placeholder")
         st.write("Replacement Time: Placeholder")
