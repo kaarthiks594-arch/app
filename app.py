@@ -1,168 +1,140 @@
 import streamlit as st
 
-# --------------------------------------------------
-# PAGE CONFIG
-# --------------------------------------------------
-st.set_page_config(page_title="MTE Calculator", layout="centered")
+st.set_page_config(page_title="MTE Calculator", layout="wide")
 
-# --------------------------------------------------
-# MOBILE STYLE
-# --------------------------------------------------
-st.markdown("""
-    <style>
-        .block-container {
-            max-width: 420px;
-            padding-top: 20px;
-            padding-bottom: 30px;
-        }
-        .main-box {
-            border: 3px solid black;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .result-box {
-            border: 3px solid black;
-            padding: 20px;
-        }
-        div.stButton > button {
-            height: 45px;
-            font-weight: 600;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# -----------------------------
+# MOCK DATA (Converted from React)
+# -----------------------------
 
-st.markdown("<h1 style='text-align:center;'>MTE CALCULATOR</h1>", unsafe_allow_html=True)
+MODULES = [
+    {"id": "mod-1", "name": "Transformer Module"},
+    {"id": "mod-2", "name": "Circuit Breaker Module"},
+    {"id": "mod-3", "name": "Metering Module"},
+    {"id": "mod-4", "name": "Cable Module"},
+    {"id": "mod-5", "name": "Switchgear Module"},
+    {"id": "mod-6", "name": "Earthing Module"},
+]
 
-# --------------------------------------------------
+REPLACEMENT_ACTIONS = [
+    {"id": "act-1", "name": "Replace Primary Winding", "module": "mod-1", "prep": 2, "rep": 8, "fin": 2, "man": 4},
+    {"id": "act-2", "name": "Replace Circuit Breaker Unit", "module": "mod-2", "prep": 1, "rep": 4, "fin": 1, "man": 2},
+    {"id": "act-3", "name": "Install Smart Meter", "module": "mod-3", "prep": 0.5, "rep": 1.5, "fin": 0.5, "man": 1},
+    {"id": "act-4", "name": "Underground Cable Replacement", "module": "mod-4", "prep": 3, "rep": 12, "fin": 3, "man": 5},
+]
+
+# -----------------------------
 # SESSION STATE INIT
-# --------------------------------------------------
-if "result" not in st.session_state:
-    st.session_state.result = None
+# -----------------------------
 
-# --------------------------------------------------
-# MAIN SECTION
-# --------------------------------------------------
-st.markdown('<div class="main-box">', unsafe_allow_html=True)
+if "ken" not in st.session_state:
+    st.session_state.ken = None
 
-# KEN + SEARCH
-st.markdown("**KEN NO**")
-col1, col2 = st.columns([3,1])
+if "modules" not in st.session_state:
+    st.session_state.modules = []
 
-with col1:
-    ken_no = st.text_input("", key="ken")
+if "actions" not in st.session_state:
+    st.session_state.actions = []
 
-with col2:
-    search_ken = st.button("SEARCH", use_container_width=True)
+if "show_results" not in st.session_state:
+    st.session_state.show_results = False
 
-# Electrification (dummy auto fill)
-if search_ken:
-    st.session_state.electrification = "Standard Electrification"
+# -----------------------------
+# HEADER
+# -----------------------------
 
-electrification = st.text_input(
-    "ELECTRIFICATION",
-    value=st.session_state.get("electrification", "")
-)
+st.title("MTE CALCULATOR")
 
-# --------------------------------------------------
-# MODULES
-# --------------------------------------------------
-st.markdown("### MODULES")
+# -----------------------------
+# STEP 1: KEN SEARCH
+# -----------------------------
 
-modules = ["Module A", "Module B", "Module C", "Module D", "Module E", "Module F"]
+if not st.session_state.ken:
+    ken_input = st.text_input("Enter KEN Number")
 
-selected_modules = st.multiselect(
-    "Select Modules",
-    modules,
-    key="modules"
-)
+    if st.button("Search"):
+        if ken_input:
+            st.session_state.ken = ken_input
+            st.rerun()
+        else:
+            st.error("Please enter KEN Number")
 
-# --------------------------------------------------
-# REPLACEMENT ACTIONS
-# --------------------------------------------------
-replacement_data = {
-    "Module A": ["A - Replace Motor", "A - Replace Cable"],
-    "Module B": ["B - Replace Board", "B - Replace Fuse"],
-    "Module C": ["C - Replace Sensor"],
-    "Module D": ["D - Replace Switch"],
-    "Module E": ["E - Replace Controller"],
-    "Module F": ["F - Replace Wiring"]
-}
+# -----------------------------
+# MAIN FLOW
+# -----------------------------
 
-selected_actions = []
+if st.session_state.ken and not st.session_state.show_results:
 
-if selected_modules:
-    st.markdown("**REPLACEMENT ACTIONS**")
+    st.success(f"KEN Found: {st.session_state.ken}")
 
-    for module in selected_modules:
-        action = st.selectbox(
-            f"{module}",
-            replacement_data[module],
-            key=module
-        )
-        selected_actions.append(action)
+    st.subheader("Electrification Type")
+    electrification_type = st.radio("Select Type", ["LCE"], horizontal=True)
 
-# --------------------------------------------------
-# CALCULATE & CLEAR
-# --------------------------------------------------
-col1, col2 = st.columns(2)
+    st.subheader("Select Modules")
 
-calculate = col1.button("CALCULATE MTE", use_container_width=True)
-clear = col2.button("CLEAR", use_container_width=True)
+    selected_modules = []
+    for module in MODULES:
+        if st.checkbox(module["name"], key=module["id"]):
+            selected_modules.append(module["id"])
 
-st.markdown('</div>', unsafe_allow_html=True)
+    st.session_state.modules = selected_modules
 
-# --------------------------------------------------
-# CALCULATION LOGIC (SAMPLE)
-# --------------------------------------------------
-if calculate:
+    if selected_modules:
+        st.subheader("Replacement Actions")
 
-    preparation_time = len(selected_modules) * 10
-    replacement_time = len(selected_actions) * 20
-    finalization_time = 15
+        available_actions = [
+            action for action in REPLACEMENT_ACTIONS
+            if action["module"] in selected_modules
+        ]
 
-    total_time = preparation_time + replacement_time + finalization_time
-    manpower = max(1, len(selected_modules))
-    overall_mte = total_time * manpower
+        selected_actions = []
+        for action in available_actions:
+            if st.checkbox(action["name"], key=action["id"]):
+                selected_actions.append(action["id"])
 
-    st.session_state.result = {
-        "modules": selected_modules,
-        "electrification": electrification,
-        "actions": selected_actions,
-        "prep": preparation_time,
-        "replace": replacement_time,
-        "final": finalization_time,
-        "manpower": manpower,
-        "mte": overall_mte
-    }
+        st.session_state.actions = selected_actions
 
-# --------------------------------------------------
-# RESULT SECTION
-# --------------------------------------------------
-if st.session_state.result:
+    if st.session_state.modules and st.session_state.actions:
+        if st.button("Calculate MTE"):
+            st.session_state.show_results = True
+            st.rerun()
 
-    data = st.session_state.result
+# -----------------------------
+# RESULTS
+# -----------------------------
 
-    st.markdown('<div class="result-box">', unsafe_allow_html=True)
+if st.session_state.show_results:
 
-    st.subheader("RESULT")
+    st.header("MTE Results")
 
-    st.write("Selected Modules:", data["modules"])
-    st.write("Electrification:", data["electrification"])
-    st.write("Replacement Action(s):", data["actions"])
+    st.write("### KEN Number")
+    st.write(st.session_state.ken)
 
-    with st.expander("Time Details"):
-        st.write("Preparation Time:", data["prep"], "mins")
-        st.write("Replacement Time:", data["replace"], "mins")
-        st.write("Finalization Time:", data["final"], "mins")
+    total_time = 0
+    total_mte = 0
 
-    st.write("Manpower Required:", data["manpower"])
-    st.write("Overall MTE:", data["mte"])
+    st.write("### Selected Actions")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    for action in REPLACEMENT_ACTIONS:
+        if action["id"] in st.session_state.actions:
 
-# --------------------------------------------------
-# CLEAR FUNCTION
-# --------------------------------------------------
-if clear:
-    st.session_state.clear()
-    st.rerun()
+            time = action["prep"] + action["rep"] + action["fin"]
+            mte = time * action["man"]
+
+            total_time += time
+            total_mte += mte
+
+            with st.expander(action["name"]):
+                st.write(f"Preparation: {action['prep']} h")
+                st.write(f"Replacement: {action['rep']} h")
+                st.write(f"Finalization: {action['fin']} h")
+                st.write(f"Manpower: {action['man']}")
+                st.write(f"Total Time: {time} h")
+                st.write(f"MTE: {mte} man-hours")
+
+    st.divider()
+    st.subheader(f"Total Time: {total_time:.1f} hours")
+    st.subheader(f"Overall MTE: {total_mte:.1f} man-hours")
+
+    if st.button("New Calculation"):
+        st.session_state.clear()
+        st.rerun()
