@@ -1,127 +1,168 @@
 import streamlit as st
 
-# -------------------------
-# Page Configuration
-# -------------------------
-st.set_page_config(
-    page_title="MTE Calculator",
-    layout="centered"
-)
+# --------------------------------------------------
+# PAGE CONFIG
+# --------------------------------------------------
+st.set_page_config(page_title="MTE Calculator", layout="centered")
 
-# -------------------------
-# Mobile Width Styling
-# -------------------------
+# --------------------------------------------------
+# MOBILE STYLE
+# --------------------------------------------------
 st.markdown("""
     <style>
         .block-container {
             max-width: 420px;
-            padding-top: 1rem;
-            padding-bottom: 2rem;
+            padding-top: 20px;
+            padding-bottom: 30px;
+        }
+        .main-box {
+            border: 3px solid black;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-box {
+            border: 3px solid black;
+            padding: 20px;
         }
         div.stButton > button {
-            border-radius: 8px;
             height: 45px;
             font-weight: 600;
-        }
-        .section-card {
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #f7f7f7;
-            margin-bottom: 15px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("MTE Calculator")
+st.markdown("<h1 style='text-align:center;'>MTE CALCULATOR</h1>", unsafe_allow_html=True)
 
-# -------------------------
-# KEN Section
-# -------------------------
-st.markdown('<div class="section-card">', unsafe_allow_html=True)
-st.subheader("KEN Search")
+# --------------------------------------------------
+# SESSION STATE INIT
+# --------------------------------------------------
+if "result" not in st.session_state:
+    st.session_state.result = None
 
-ken_number = st.text_input("Enter KEN Number")
+# --------------------------------------------------
+# MAIN SECTION
+# --------------------------------------------------
+st.markdown('<div class="main-box">', unsafe_allow_html=True)
 
-st.button("Search", use_container_width=True)
+# KEN + SEARCH
+st.markdown("**KEN NO**")
+col1, col2 = st.columns([3,1])
 
-st.markdown("### Electrification Details")
-st.info("Electrification details will appear here.")
+with col1:
+    ken_no = st.text_input("", key="ken")
 
-st.markdown('</div>', unsafe_allow_html=True)
+with col2:
+    search_ken = st.button("SEARCH", use_container_width=True)
 
-# -------------------------
-# Module Selection
-# -------------------------
-st.markdown('<div class="section-card">', unsafe_allow_html=True)
-st.subheader("Module Selection")
+# Electrification (dummy auto fill)
+if search_ken:
+    st.session_state.electrification = "Standard Electrification"
 
-modules = ["Module A", "Module B", "Module C", "Module D"]
-selected_modules = st.multiselect(
-    "Select Modules",
-    modules
+electrification = st.text_input(
+    "ELECTRIFICATION",
+    value=st.session_state.get("electrification", "")
 )
 
-st.markdown('</div>', unsafe_allow_html=True)
+# --------------------------------------------------
+# MODULES
+# --------------------------------------------------
+st.markdown("### MODULES")
 
-# -------------------------
-# Replacement Actions
-# -------------------------
+modules = ["Module A", "Module B", "Module C", "Module D", "Module E", "Module F"]
+
+selected_modules = st.multiselect(
+    "Select Modules",
+    modules,
+    key="modules"
+)
+
+# --------------------------------------------------
+# REPLACEMENT ACTIONS
+# --------------------------------------------------
+replacement_data = {
+    "Module A": ["A - Replace Motor", "A - Replace Cable"],
+    "Module B": ["B - Replace Board", "B - Replace Fuse"],
+    "Module C": ["C - Replace Sensor"],
+    "Module D": ["D - Replace Switch"],
+    "Module E": ["E - Replace Controller"],
+    "Module F": ["F - Replace Wiring"]
+}
+
+selected_actions = []
+
 if selected_modules:
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.subheader("Replacement Actions")
-
-    replacement_actions = {
-        "Module A": ["Action A1", "Action A2"],
-        "Module B": ["Action B1", "Action B2"],
-        "Module C": ["Action C1", "Action C2"],
-        "Module D": ["Action D1", "Action D2"],
-    }
-
-    selected_actions = []
+    st.markdown("**REPLACEMENT ACTIONS**")
 
     for module in selected_modules:
-        st.markdown(f"**{module}**")
         action = st.selectbox(
-            f"Select Replacement Action for {module}",
-            replacement_actions[module],
+            f"{module}",
+            replacement_data[module],
             key=module
         )
         selected_actions.append(action)
 
-    st.button("Search", use_container_width=True)
+# --------------------------------------------------
+# CALCULATE & CLEAR
+# --------------------------------------------------
+col1, col2 = st.columns(2)
 
-    st.markdown("### Selected Replacement Actions")
-    st.write(selected_actions)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# -------------------------
-# MTE Section
-# -------------------------
-st.markdown('<div class="section-card">', unsafe_allow_html=True)
-st.subheader("MTE Calculation")
-
-calculate = st.button("Calculate MTE", use_container_width=True)
-clear = st.button("Clear", use_container_width=True)
+calculate = col1.button("CALCULATE MTE", use_container_width=True)
+clear = col2.button("CLEAR", use_container_width=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------
-# Result Section
-# -------------------------
+# --------------------------------------------------
+# CALCULATION LOGIC (SAMPLE)
+# --------------------------------------------------
 if calculate:
-    st.markdown("## Result")
 
-    st.write("**Selected Modules:**", selected_modules)
-    st.write("**Selected Replacement Actions:**", selected_actions if selected_modules else [])
+    preparation_time = len(selected_modules) * 10
+    replacement_time = len(selected_actions) * 20
+    finalization_time = 15
 
-    st.write("**Manpower:** Placeholder")
-    st.write("**Overall MTE:** Placeholder")
+    total_time = preparation_time + replacement_time + finalization_time
+    manpower = max(1, len(selected_modules))
+    overall_mte = total_time * manpower
 
-    with st.expander("View Time Breakdown"):
-        st.write("Preparation Time: Placeholder")
-        st.write("Replacement Time: Placeholder")
-        st.write("Finalization Time: Placeholder")
+    st.session_state.result = {
+        "modules": selected_modules,
+        "electrification": electrification,
+        "actions": selected_actions,
+        "prep": preparation_time,
+        "replace": replacement_time,
+        "final": finalization_time,
+        "manpower": manpower,
+        "mte": overall_mte
+    }
 
+# --------------------------------------------------
+# RESULT SECTION
+# --------------------------------------------------
+if st.session_state.result:
+
+    data = st.session_state.result
+
+    st.markdown('<div class="result-box">', unsafe_allow_html=True)
+
+    st.subheader("RESULT")
+
+    st.write("Selected Modules:", data["modules"])
+    st.write("Electrification:", data["electrification"])
+    st.write("Replacement Action(s):", data["actions"])
+
+    with st.expander("Time Details"):
+        st.write("Preparation Time:", data["prep"], "mins")
+        st.write("Replacement Time:", data["replace"], "mins")
+        st.write("Finalization Time:", data["final"], "mins")
+
+    st.write("Manpower Required:", data["manpower"])
+    st.write("Overall MTE:", data["mte"])
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --------------------------------------------------
+# CLEAR FUNCTION
+# --------------------------------------------------
 if clear:
-    st.experimental_rerun()
+    st.session_state.clear()
+    st.rerun()
