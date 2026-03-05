@@ -2,182 +2,224 @@ import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
 
-# -----------------------------
-# FIGMA STYLE CSS
-# -----------------------------
-st.markdown("""
-<style>
+# ---------- SESSION STATE ----------
+if "page" not in st.session_state:
+    st.session_state.page = "search"
 
-.block-container{
-    max-width:420px;
-}
+if "ken_number" not in st.session_state:
+    st.session_state.ken_number = ""
 
-.title{
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-    margin-bottom:20px;
-}
+if "electrification" not in st.session_state:
+    st.session_state.electrification = None
 
-.main-box{
-    border:3px solid black;
-    padding:20px;
-    margin-bottom:20px;
-}
+if "selected_modules" not in st.session_state:
+    st.session_state.selected_modules = []
 
-.result-box{
-    border:3px solid black;
-    padding:20px;
-}
+if "selected_actions" not in st.session_state:
+    st.session_state.selected_actions = []
 
-label{
-    font-weight:600;
-}
+if "results" not in st.session_state:
+    st.session_state.results = {}
 
-div.stButton > button{
-    height:40px;
-    font-weight:bold;
-}
+# ---------- MODULE LIST ----------
+MODULES = [f"Module {i}" for i in range(1,13)]
 
-</style>
-""", unsafe_allow_html=True)
+REPLACEMENT_ACTIONS = [
+    "Replace Component A",
+    "Replace Component B",
+    "Replace Component C",
+    "Repair Module",
+    "Upgrade System",
+    "Install New Part",
+    "Remove Old Part",
+    "Test and Verify",
+]
 
-# -----------------------------
-# SESSION STATE
-# -----------------------------
-if "ken" not in st.session_state:
-    st.session_state.ken=""
 
-if "modules" not in st.session_state:
-    st.session_state.modules=[]
+# ---------- HEADER ----------
+st.markdown(
+    """
+    <div style='background:#2563eb;padding:15px;border-radius:10px'>
+    <h2 style='color:white;text-align:center'>MTE Calculator</h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-if "actions" not in st.session_state:
-    st.session_state.actions=[]
+st.write("")
 
-if "result" not in st.session_state:
-    st.session_state.result=False
+# ---------- PAGE 1 : KEN SEARCH ----------
+if st.session_state.page == "search":
 
-# -----------------------------
-# TITLE
-# -----------------------------
-st.markdown('<div class="title">MTE CALCULATOR</div>',unsafe_allow_html=True)
+    st.subheader("KEN Search")
 
-# -----------------------------
-# MAIN UI BOX
-# -----------------------------
-st.markdown('<div class="main-box">',unsafe_allow_html=True)
+    ken = st.text_input("Enter KEN Number")
 
-# KEN NUMBER
-st.write("Ken number")
+    if st.button("Search"):
 
-c1,c2 = st.columns([3,1])
+        if ken.strip() == "":
+            st.error("Please enter a KEN number")
+        else:
+            st.session_state.ken_number = ken
+            st.session_state.electrification = f"AC 25kV | Zone: Central | Section: {ken}"
+            st.session_state.page = "details"
+            st.rerun()
 
-with c1:
-    ken_input = st.text_input("", value=st.session_state.ken)
 
-with c2:
-    search = st.button("search", key="search1")
+# ---------- PAGE 2 : DETAILS ----------
+else:
 
-if search:
-    st.session_state.ken = ken_input
+    # Electrification
+    st.subheader("Electrification")
 
-# ELECTRIFICATION
-st.write("Electrification")
+    st.info(st.session_state.electrification)
 
-st.text_input("", value="LCE", disabled=True)
 
-# MODULES
-st.write("modules")
+    # ---------- MODULE GRID ----------
+    st.subheader("Modules")
 
-col1,col2,col3 = st.columns(3)
+    cols = st.columns(3)
 
-with col1:
-    m1 = st.checkbox("module 1")
+    for i,module in enumerate(MODULES):
 
-with col2:
-    m2 = st.checkbox("module 2")
+        col = cols[i%3]
 
-with col3:
-    m3 = st.checkbox("module 3")
+        selected = module in st.session_state.selected_modules
 
-col4,col5,col6 = st.columns(3)
+        if col.button(
+            module,
+            key=module,
+            use_container_width=True,
+        ):
+            if selected:
+                st.session_state.selected_modules.remove(module)
+            else:
+                st.session_state.selected_modules.append(module)
 
-with col4:
-    m4 = st.checkbox("module 4")
+    st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
 
-with col5:
-    m5 = st.checkbox("module 5")
 
-with col6:
-    m6 = st.checkbox("module 6")
+    # ---------- REPLACEMENT ACTIONS ----------
+    st.subheader("Replacement Action")
 
-# REPLACEMENT ACTIONS
-st.write("Replacement actions")
+    if len(st.session_state.selected_modules) == 0:
+        st.warning("Select modules first")
 
-c1,c2 = st.columns([3,1])
+    else:
 
-with c1:
-    action = st.selectbox("",[
-        "Select Action",
-        "Action 1",
-        "Action 2",
-        "Action 3"
-    ])
+        options = []
 
-with c2:
-    add = st.button("search", key="search2")
+        for m in st.session_state.selected_modules:
+            for a in REPLACEMENT_ACTIONS:
+                options.append(f"{a} - {m}")
 
-if add and action!="Select Action":
-    if action not in st.session_state.actions:
-        st.session_state.actions.append(action)
+        action = st.selectbox("Select replacement action", options)
 
-# SELECTED ACTIONS
-st.write("selected replacement actions")
+        if st.button("Add Action"):
 
-st.text_area("", value="\n".join(st.session_state.actions), height=120)
+            if action not in st.session_state.selected_actions:
+                st.session_state.selected_actions.append(action)
 
-# BUTTONS
-b1,b2 = st.columns(2)
+    # Display selected actions
+    if st.session_state.selected_actions:
 
-with b1:
-    calc = st.button("calculate mte")
+        st.write("Selected Actions")
 
-with b2:
-    clear = st.button("clear")
+        for i,a in enumerate(st.session_state.selected_actions):
 
-if clear:
-    st.session_state.clear()
-    st.rerun()
+            col1,col2 = st.columns([8,1])
 
-if calc:
-    st.session_state.result=True
+            col1.write(a)
 
-st.markdown('</div>',unsafe_allow_html=True)
+            if col2.button("X", key=f"remove{i}"):
+                st.session_state.selected_actions.pop(i)
+                st.rerun()
 
-# -----------------------------
-# RESULT BOX
-# -----------------------------
-if st.session_state.result:
 
-    st.markdown('<div class="result-box">',unsafe_allow_html=True)
+    st.write("---")
 
-    st.write("result")
 
-    st.write("ken no")
-    st.write(st.session_state.ken)
+    # ---------- BUTTONS ----------
+    col1,col2 = st.columns(2)
 
-    st.write("modules")
+    if col1.button("Calculate MTE"):
 
-    st.write("replacement action")
+        if len(st.session_state.selected_modules)==0:
+            st.error("Select at least one module")
 
-    st.write("time")
+        elif len(st.session_state.selected_actions)==0:
+            st.error("Select at least one action")
 
-    st.write("1) preparation")
+        else:
 
-    st.write("2) replacement")
+            st.session_state.results = {
 
-    st.write("3) finalisation")
+                "time":"4.5 hours",
+                "manpower":"3 persons",
+                "overall":"13.5 hours",
+                "prep":"1 hour",
+                "replace":"2.5 hours",
+                "final":"1 hour"
 
-    st.write("overall mte")
+            }
 
-    st.markdown('</div>',unsafe_allow_html=True)
+            st.success("MTE Calculated")
+
+
+    if col2.button("Clear"):
+
+        st.session_state.page="search"
+        st.session_state.ken_number=""
+        st.session_state.electrification=None
+        st.session_state.selected_modules=[]
+        st.session_state.selected_actions=[]
+        st.session_state.results={}
+
+        st.rerun()
+
+
+
+    # ---------- RESULTS ----------
+    if st.session_state.results:
+
+        st.write("---")
+
+        st.subheader("Result")
+
+        st.write("KEN Number")
+        st.text(st.session_state.ken_number)
+
+        st.write("Electrification")
+        st.text(st.session_state.electrification)
+
+        st.write("Selected Replacement Actions")
+
+        for a in st.session_state.selected_actions:
+            st.write("-",a)
+
+
+        st.write("Time")
+
+        col1,col2 = st.columns([4,1])
+
+        col1.text(st.session_state.results["time"])
+
+        if col2.button("Details"):
+
+            st.info(
+                f"""
+Preparation : {st.session_state.results['prep']}
+
+Replacement : {st.session_state.results['replace']}
+
+Finalisation : {st.session_state.results['final']}
+"""
+            )
+
+
+        st.write("Man Power")
+        st.text(st.session_state.results["manpower"])
+
+        st.write("Overall MTE")
+
+        st.success(st.session_state.results["overall"])
