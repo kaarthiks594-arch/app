@@ -47,7 +47,7 @@ unsafe_allow_html=True
 
 st.write("")
 
-# ---------- PAGE 1 : KEN SEARCH ----------
+# ---------- PAGE 1 : SEARCH ----------
 if st.session_state.page == "search":
 
     st.subheader("KEN Search")
@@ -80,7 +80,6 @@ else:
     for i,module in enumerate(MODULES):
 
         col = cols[i % 3]
-
         selected = module in st.session_state.selected_modules
 
         if col.button(module, key=module, use_container_width=True):
@@ -97,11 +96,11 @@ else:
 
         st.write("Selected Modules")
 
-        for i,m in enumerate(st.session_state.selected_modules):
+        for i,module in enumerate(st.session_state.selected_modules):
 
             col1,col2 = st.columns([8,1])
 
-            col1.write(m)
+            col1.write(module)
 
             if col2.button("X", key=f"remove_module{i}"):
 
@@ -122,25 +121,25 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        action = st.selectbox(
+        selected = st.multiselect(
             "Search and select replacement action",
-            [""] + options
+            options,
+            default=st.session_state.selected_actions,
+            placeholder="Type or select actions"
         )
 
-        if action and action not in st.session_state.selected_actions:
-            st.session_state.selected_actions.append(action)
-            st.rerun()
+        st.session_state.selected_actions = selected
 
         # ---------- SHOW SELECTED ACTIONS ----------
         if st.session_state.selected_actions:
 
             st.write("Selected Actions")
 
-            for i,a in enumerate(st.session_state.selected_actions):
+            for i,action in enumerate(st.session_state.selected_actions):
 
                 col1,col2 = st.columns([8,1])
 
-                col1.write(a)
+                col1.write(action)
 
                 if col2.button("X", key=f"remove_action{i}"):
 
@@ -154,10 +153,10 @@ else:
 
     if col1.button("Calculate MTE"):
 
-        if len(st.session_state.selected_modules)==0:
+        if len(st.session_state.selected_modules) == 0:
             st.error("Select at least one module")
 
-        elif len(st.session_state.selected_actions)==0:
+        elif len(st.session_state.selected_actions) == 0:
             st.error("Select at least one action")
 
         else:
@@ -177,12 +176,12 @@ else:
 
     if col2.button("Clear"):
 
-        st.session_state.page="search"
-        st.session_state.ken_number=""
-        st.session_state.electrification=None
-        st.session_state.selected_modules=[]
-        st.session_state.selected_actions=[]
-        st.session_state.results={}
+        st.session_state.page = "search"
+        st.session_state.ken_number = ""
+        st.session_state.electrification = None
+        st.session_state.selected_modules = []
+        st.session_state.selected_actions = []
+        st.session_state.results = {}
 
         st.rerun()
 
@@ -228,4 +227,3 @@ Finalisation : {st.session_state.results['final']}
         st.write("Overall MTE")
 
         st.success(st.session_state.results["overall"])
-
