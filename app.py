@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
@@ -88,7 +89,20 @@ else:
             else:
                 st.session_state.selected_modules.append(module)
 
-    st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
+    # ---------- SELECTED MODULES ----------
+    if st.session_state.selected_modules:
+
+        st.write("Selected Modules")
+
+        for i, module in enumerate(st.session_state.selected_modules):
+
+            col1, col2 = st.columns([8,1])
+
+            col1.write(module)
+
+            if col2.button("X", key=f"remove_module_{i}"):
+                st.session_state.selected_modules.remove(module)
+                st.rerun()
 
     # ---------- REPLACEMENT ACTIONS ----------
     st.subheader("Replacement Action")
@@ -104,7 +118,7 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        # function to add action automatically
+        # Add action automatically when selected
         def add_action():
             action = st.session_state.action_select
             if action and action not in st.session_state.selected_actions:
@@ -128,7 +142,7 @@ else:
 
             col1.write(a)
 
-            if col2.button("X", key=f"remove{i}"):
+            if col2.button("X", key=f"remove_action_{i}"):
                 st.session_state.selected_actions.pop(i)
                 st.rerun()
 
@@ -213,3 +227,4 @@ Finalisation : {st.session_state.results['final']}
         st.write("Overall MTE")
 
         st.success(st.session_state.results["overall"])
+```
