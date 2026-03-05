@@ -21,9 +21,6 @@ if "selected_actions" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state.results = {}
 
-if "action_select" not in st.session_state:
-    st.session_state.action_select = None
-
 
 # ---------- MODULE LIST ----------
 MODULES = [f"Module {i}" for i in range(1, 13)]
@@ -42,12 +39,12 @@ REPLACEMENT_ACTIONS = [
 
 # ---------- HEADER ----------
 st.markdown(
-    """
-    <div style='background:#2563eb;padding:15px;border-radius:10px'>
-    <h2 style='color:white;text-align:center'>MTE Calculator</h2>
-    </div>
-    """,
-    unsafe_allow_html=True
+"""
+<div style='background:#2563eb;padding:15px;border-radius:10px'>
+<h2 style='color:white;text-align:center'>MTE Calculator</h2>
+</div>
+""",
+unsafe_allow_html=True
 )
 
 st.write("")
@@ -71,7 +68,7 @@ if st.session_state.page == "search":
             st.rerun()
 
 
-# ---------- PAGE 2 : DETAILS ----------
+# ---------- PAGE 2 ----------
 else:
 
     # Electrification
@@ -95,22 +92,18 @@ else:
             else:
                 st.session_state.selected_modules.append(module)
 
-    # ---------- SELECTED MODULES ----------
+    # ---------- SHOW SELECTED MODULES ----------
     if st.session_state.selected_modules:
 
         st.write("Selected Modules")
 
+        cols = st.columns(len(st.session_state.selected_modules))
+
         for i, module in enumerate(st.session_state.selected_modules):
+            with cols[i]:
+                st.info(module)
 
-            col1, col2 = st.columns([8, 1])
-
-            col1.write(module)
-
-            if col2.button("X", key=f"remove_module_{i}"):
-                st.session_state.selected_modules.remove(module)
-                st.rerun()
-
-    # ---------- REPLACEMENT ACTIONS ----------
+    # ---------- REPLACEMENT ACTION ----------
     st.subheader("Replacement Action")
 
     if len(st.session_state.selected_modules) == 0:
@@ -124,32 +117,20 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        def add_action():
-            action = st.session_state.action_select
-            if action and action not in st.session_state.selected_actions:
-                st.session_state.selected_actions.append(action)
-
-        st.selectbox(
-            "Select replacement action",
-            options,
-            key="action_select",
-            on_change=add_action
+        selected = st.multiselect(
+            "Select replacement actions",
+            options
         )
 
-    # ---------- SELECTED ACTIONS ----------
+        st.session_state.selected_actions = selected
+
+    # ---------- SHOW SELECTED ACTIONS ----------
     if st.session_state.selected_actions:
 
-        st.write("Selected Actions")
+        st.write("Selected Replacement Actions")
 
-        for i, a in enumerate(st.session_state.selected_actions):
-
-            col1, col2 = st.columns([8, 1])
-
-            col1.write(a)
-
-            if col2.button("X", key=f"remove_action_{i}"):
-                st.session_state.selected_actions.pop(i)
-                st.rerun()
+        for a in st.session_state.selected_actions:
+            st.write("-", a)
 
     st.write("---")
 
@@ -167,12 +148,14 @@ else:
         else:
 
             st.session_state.results = {
+
                 "time": "4.5 hours",
                 "manpower": "3 persons",
                 "overall": "13.5 hours",
                 "prep": "1 hour",
                 "replace": "2.5 hours",
                 "final": "1 hour"
+
             }
 
             st.success("MTE Calculated")
@@ -208,7 +191,7 @@ else:
 
         st.write("Time")
 
-        col1, col2 = st.columns([4, 1])
+        col1, col2 = st.columns([4,1])
 
         col1.text(st.session_state.results["time"])
 
