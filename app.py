@@ -2,6 +2,15 @@ import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
 
+# ---------- FORCE DROPDOWN DOWNWARD ----------
+st.markdown("""
+<style>
+div[data-baseweb="select"] ul {
+    max-height: 300px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ---------- SESSION STATE ----------
 if "page" not in st.session_state:
     st.session_state.page = "search"
@@ -21,10 +30,9 @@ if "selected_actions" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state.results = {}
 
-# ---------- MODULES ----------
-MODULES = [f"Module {i}" for i in range(1, 13)]
+# ---------- MODULE LIST ----------
+MODULES = [f"Module {i}" for i in range(1,13)]
 
-# ---------- ACTIONS ----------
 REPLACEMENT_ACTIONS = [
     "Replace Component A",
     "Replace Component B",
@@ -48,7 +56,7 @@ unsafe_allow_html=True
 
 st.write("")
 
-# ---------- PAGE 1 ----------
+# ---------- PAGE 1 : SEARCH ----------
 if st.session_state.page == "search":
 
     st.subheader("KEN Search")
@@ -66,24 +74,23 @@ if st.session_state.page == "search":
             st.session_state.page = "details"
             st.rerun()
 
-# ---------- PAGE 2 ----------
+# ---------- PAGE 2 : DETAILS ----------
 else:
 
+    # Electrification
     st.subheader("Electrification")
     st.info(st.session_state.electrification)
 
-    # ---------- MODULES ----------
+    # ---------- MODULE GRID ----------
     st.subheader("Modules")
 
     cols = st.columns(3)
 
-    for i, module in enumerate(MODULES):
+    for i,module in enumerate(MODULES):
 
         col = cols[i % 3]
 
         selected = module in st.session_state.selected_modules
-
-        button_style = "primary" if selected else "secondary"
 
         if col.button(module, key=module, use_container_width=True):
 
@@ -94,57 +101,57 @@ else:
 
             st.rerun()
 
-    # ---------- SELECTED MODULES ----------
+    # ---------- SHOW SELECTED MODULES ----------
     if st.session_state.selected_modules:
 
-        st.write("### Selected Modules")
+        st.write("Selected Modules")
 
-        for i, module in enumerate(st.session_state.selected_modules):
+        for i,module in enumerate(st.session_state.selected_modules):
 
-            col1, col2 = st.columns([8,1])
+            col1,col2 = st.columns([8,1])
 
             col1.write(module)
 
-            if col2.button("❌", key=f"remove_module_{i}"):
+            if col2.button("X", key=f"remove_module{i}"):
 
                 st.session_state.selected_modules.pop(i)
                 st.rerun()
 
-    # ---------- ACTION SELECTION ----------
-    st.subheader("Replacement Actions")
+    # ---------- REPLACEMENT ACTION ----------
+    st.subheader("Replacement Action")
 
     if len(st.session_state.selected_modules) == 0:
-
         st.warning("Select modules first")
 
     else:
 
-        # Generate options
-        options = list(set(
-            f"{a} - {m}"
-            for m in st.session_state.selected_modules
-            for a in REPLACEMENT_ACTIONS
-        ))
+        options = []
 
-        st.multiselect(
-            "Search and select actions",
+        for m in st.session_state.selected_modules:
+            for a in REPLACEMENT_ACTIONS:
+                options.append(f"{a} - {m}")
+
+        selected = st.multiselect(
+            "Search replacement actions",
             options,
-            key="selected_actions",
-            placeholder="Type to search actions..."
+            default=st.session_state.selected_actions,
+            placeholder="Type or scroll to choose actions"
         )
 
-        # ---------- SHOW SELECTED ACTIONS ----------
+        st.session_state.selected_actions = selected
+
+        # ---------- SHOW SELECTED ACTIONS BELOW ----------
         if st.session_state.selected_actions:
 
-            st.write("### Selected Actions")
+            st.write("Selected Replacement Actions")
 
-            for i, action in enumerate(st.session_state.selected_actions):
+            for i,action in enumerate(st.session_state.selected_actions):
 
-                col1, col2 = st.columns([8,1])
+                col1,col2 = st.columns([8,1])
 
                 col1.write(action)
 
-                if col2.button("❌", key=f"remove_action_{i}"):
+                if col2.button("X", key=f"remove_action{i}"):
 
                     st.session_state.selected_actions.pop(i)
                     st.rerun()
@@ -152,7 +159,7 @@ else:
     st.write("---")
 
     # ---------- BUTTONS ----------
-    col1, col2 = st.columns(2)
+    col1,col2 = st.columns(2)
 
     if col1.button("Calculate MTE"):
 
@@ -166,12 +173,12 @@ else:
 
             st.session_state.results = {
 
-                "time": "4.5 hours",
-                "manpower": "3 persons",
-                "overall": "13.5 hours",
-                "prep": "1 hour",
-                "replace": "2.5 hours",
-                "final": "1 hour"
+                "time":"4.5 hours",
+                "manpower":"3 persons",
+                "overall":"13.5 hours",
+                "prep":"1 hour",
+                "replace":"2.5 hours",
+                "final":"1 hour"
 
             }
 
@@ -179,12 +186,12 @@ else:
 
     if col2.button("Clear"):
 
-        st.session_state.page = "search"
-        st.session_state.ken_number = ""
-        st.session_state.electrification = None
-        st.session_state.selected_modules = []
-        st.session_state.selected_actions = []
-        st.session_state.results = {}
+        st.session_state.clear()
+
+        st.session_state.page="search"
+        st.session_state.selected_modules=[]
+        st.session_state.selected_actions=[]
+        st.session_state.results={}
 
         st.rerun()
 
@@ -195,36 +202,38 @@ else:
 
         st.subheader("Result")
 
-        st.write("**KEN Number**")
+        st.write("KEN Number")
         st.text(st.session_state.ken_number)
 
-        st.write("**Electrification**")
+        st.write("Electrification")
         st.text(st.session_state.electrification)
 
-        st.write("**Selected Replacement Actions**")
+        st.write("Selected Replacement Actions")
 
         for a in st.session_state.selected_actions:
-            st.write("-", a)
+            st.write("-",a)
 
-        st.write("### Time")
+        st.write("Time")
 
-        col1, col2 = st.columns([4,1])
+        col1,col2 = st.columns([4,1])
 
         col1.text(st.session_state.results["time"])
 
         if col2.button("Details"):
 
-            st.info(f"""
+            st.info(
+f"""
 Preparation : {st.session_state.results['prep']}
 
 Replacement : {st.session_state.results['replace']}
 
 Finalisation : {st.session_state.results['final']}
-""")
+"""
+            )
 
-        st.write("### Man Power")
+        st.write("Man Power")
         st.text(st.session_state.results["manpower"])
 
-        st.write("### Overall MTE")
+        st.write("Overall MTE")
 
         st.success(st.session_state.results["overall"])
