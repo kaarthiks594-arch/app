@@ -3,140 +3,181 @@ import streamlit as st
 st.set_page_config(page_title="MTE Calculator", layout="centered")
 
 # -----------------------------
-# MOBILE STYLE
+# FIGMA STYLE CSS
 # -----------------------------
 st.markdown("""
 <style>
 
 .block-container{
     max-width:420px;
-    padding-top:20px;
 }
 
-.container-box{
-    border:2px solid black;
+.title{
+    text-align:center;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.main-box{
+    border:3px solid black;
     padding:20px;
     margin-bottom:20px;
 }
 
 .result-box{
-    border:2px solid black;
+    border:3px solid black;
     padding:20px;
 }
 
-.module-btn{
-    border:1px solid black;
-    padding:10px;
-    text-align:center;
+label{
+    font-weight:600;
+}
+
+div.stButton > button{
+    height:40px;
+    font-weight:bold;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# TITLE
+# SESSION STATE
 # -----------------------------
-st.markdown("<h2 style='text-align:center;'>MTE CALCULATOR</h2>", unsafe_allow_html=True)
+if "ken" not in st.session_state:
+    st.session_state.ken=""
+
+if "modules" not in st.session_state:
+    st.session_state.modules=[]
+
+if "actions" not in st.session_state:
+    st.session_state.actions=[]
+
+if "result" not in st.session_state:
+    st.session_state.result=False
 
 # -----------------------------
-# MAIN BOX
+# TITLE
 # -----------------------------
-st.markdown('<div class="container-box">', unsafe_allow_html=True)
+st.markdown('<div class="title">MTE CALCULATOR</div>',unsafe_allow_html=True)
+
+# -----------------------------
+# MAIN UI BOX
+# -----------------------------
+st.markdown('<div class="main-box">',unsafe_allow_html=True)
 
 # KEN NUMBER
 st.write("Ken number")
 
-col1, col2 = st.columns([3,1])
+c1,c2 = st.columns([3,1])
 
-with col1:
-    ken = st.text_input("", placeholder="Enter KEN number")
+with c1:
+    ken_input = st.text_input("", value=st.session_state.ken)
 
-with col2:
-    st.button("search", key="search1")
+with c2:
+    search = st.button("search", key="search1")
+
+if search:
+    st.session_state.ken = ken_input
 
 # ELECTRIFICATION
 st.write("Electrification")
 
-st.text_input("", placeholder="Electrification type")
+st.text_input("", value="LCE", disabled=True)
 
 # MODULES
 st.write("modules")
 
-c1,c2,c3 = st.columns(3)
+col1,col2,col3 = st.columns(3)
 
-with c1:
-    st.checkbox("", key="m1")
+with col1:
+    m1 = st.checkbox("module 1")
 
-with c2:
-    st.checkbox("", key="m2")
+with col2:
+    m2 = st.checkbox("module 2")
 
-with c3:
-    st.checkbox("", key="m3")
+with col3:
+    m3 = st.checkbox("module 3")
 
-c4,c5,c6 = st.columns(3)
+col4,col5,col6 = st.columns(3)
 
-with c4:
-    st.checkbox("", key="m4")
+with col4:
+    m4 = st.checkbox("module 4")
 
-with c5:
-    st.checkbox("", key="m5")
+with col5:
+    m5 = st.checkbox("module 5")
 
-with c6:
-    st.checkbox("", key="m6")
+with col6:
+    m6 = st.checkbox("module 6")
 
 # REPLACEMENT ACTIONS
 st.write("Replacement actions")
 
-col1, col2 = st.columns([4,1])
+c1,c2 = st.columns([3,1])
 
-with col1:
-    st.selectbox("",[
-        "Select replacement action",
+with c1:
+    action = st.selectbox("",[
+        "Select Action",
         "Action 1",
         "Action 2",
         "Action 3"
     ])
 
-with col2:
-    st.button("▼", key="dropdown")
+with c2:
+    add = st.button("search", key="search2")
+
+if add and action!="Select Action":
+    if action not in st.session_state.actions:
+        st.session_state.actions.append(action)
 
 # SELECTED ACTIONS
-st.write("selected replacements actions")
+st.write("selected replacement actions")
 
-st.text_area("", height=130)
+st.text_area("", value="\n".join(st.session_state.actions), height=120)
 
 # BUTTONS
-col1, col2 = st.columns(2)
+b1,b2 = st.columns(2)
 
-with col1:
-    st.button("calculate mte", key="calc")
+with b1:
+    calc = st.button("calculate mte")
 
-with col2:
-    st.button("clear", key="clear")
+with b2:
+    clear = st.button("clear")
 
-st.markdown('</div>', unsafe_allow_html=True)
+if clear:
+    st.session_state.clear()
+    st.rerun()
+
+if calc:
+    st.session_state.result=True
+
+st.markdown('</div>',unsafe_allow_html=True)
 
 # -----------------------------
-# RESULT SECTION
+# RESULT BOX
 # -----------------------------
-st.markdown('<div class="result-box">', unsafe_allow_html=True)
+if st.session_state.result:
 
-st.write("result")
+    st.markdown('<div class="result-box">',unsafe_allow_html=True)
 
-st.write("ken no")
+    st.write("result")
 
-st.write("modules")
+    st.write("ken no")
+    st.write(st.session_state.ken)
 
-st.write("replacement action")
+    st.write("modules")
 
-st.write("time")
+    st.write("replacement action")
 
-st.write("1) preparation")
+    st.write("time")
 
-st.write("2) replacement")
+    st.write("1) preparation")
 
-st.write("3) finalisation")
+    st.write("2) replacement")
 
-st.write("overall mte")
+    st.write("3) finalisation")
 
-st.markdown('</div>', unsafe_allow_html=True)
+    st.write("overall mte")
+
+    st.markdown('</div>',unsafe_allow_html=True)
