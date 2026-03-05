@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
@@ -68,6 +69,7 @@ if st.session_state.page == "search":
 # ---------- PAGE 2 : DETAILS ----------
 else:
 
+    # Electrification
     st.subheader("Electrification")
     st.info(st.session_state.electrification)
 
@@ -79,7 +81,6 @@ else:
     for i, module in enumerate(MODULES):
 
         col = cols[i % 3]
-
         selected = module in st.session_state.selected_modules
 
         if col.button(module, key=module, use_container_width=True):
@@ -91,7 +92,21 @@ else:
 
             st.rerun()
 
-    st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
+    # ---------- SHOW SELECTED MODULES ----------
+    if st.session_state.selected_modules:
+
+        st.write("Selected Modules")
+
+        for i, module in enumerate(st.session_state.selected_modules):
+
+            col1, col2 = st.columns([8,1])
+
+            col1.write(module)
+
+            if col2.button("X", key=f"remove_module{i}"):
+
+                st.session_state.selected_modules.pop(i)
+                st.rerun()
 
     # ---------- REPLACEMENT ACTIONS ----------
     st.subheader("Replacement Action")
@@ -115,21 +130,21 @@ else:
 
         st.session_state.selected_actions = selected
 
-    # ---------- DISPLAY SELECTED ACTIONS ----------
-    if st.session_state.selected_actions:
+        # ---------- SHOW SELECTED ACTIONS ----------
+        if st.session_state.selected_actions:
 
-        st.write("Selected Actions")
+            st.write("Selected Actions")
 
-        for i, action in enumerate(st.session_state.selected_actions):
+            for i, action in enumerate(st.session_state.selected_actions):
 
-            col1, col2 = st.columns([8, 1])
+                col1, col2 = st.columns([8,1])
 
-            col1.write(action)
+                col1.write(action)
 
-            if col2.button("X", key=f"remove{i}"):
+                if col2.button("X", key=f"remove_action{i}"):
 
-                st.session_state.selected_actions.pop(i)
-                st.rerun()
+                    st.session_state.selected_actions.pop(i)
+                    st.rerun()
 
     st.write("---")
 
@@ -147,12 +162,14 @@ else:
         else:
 
             st.session_state.results = {
+
                 "time": "4.5 hours",
                 "manpower": "3 persons",
                 "overall": "13.5 hours",
                 "prep": "1 hour",
                 "replace": "2.5 hours",
                 "final": "1 hour"
+
             }
 
             st.success("MTE Calculated")
@@ -188,7 +205,7 @@ else:
 
         st.write("Time")
 
-        col1, col2 = st.columns([4, 1])
+        col1, col2 = st.columns([4,1])
 
         col1.text(st.session_state.results["time"])
 
@@ -208,4 +225,6 @@ Finalisation : {st.session_state.results['final']}
         st.text(st.session_state.results["manpower"])
 
         st.write("Overall MTE")
+
         st.success(st.session_state.results["overall"])
+```
