@@ -3,105 +3,140 @@ import streamlit as st
 st.set_page_config(page_title="MTE Calculator", layout="centered")
 
 # -----------------------------
-# Mobile Layout Styling
+# MOBILE STYLE
 # -----------------------------
 st.markdown("""
-    <style>
-        .block-container {
-            max-width: 500px;
-            padding-top: 20px;
-            padding-bottom: 40px;
-        }
-        .main-box {
-            border: 3px solid black;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .result-box {
-            border: 3px solid black;
-            padding: 20px;
-        }
-        div.stButton > button {
-            height: 45px;
-            font-weight: 600;
-        }
-    </style>
+<style>
+
+.block-container{
+    max-width:420px;
+    padding-top:20px;
+}
+
+.container-box{
+    border:2px solid black;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.result-box{
+    border:2px solid black;
+    padding:20px;
+}
+
+.module-btn{
+    border:1px solid black;
+    padding:10px;
+    text-align:center;
+}
+
+</style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center;'>MTE CALCULATOR</h1>", unsafe_allow_html=True)
+# -----------------------------
+# TITLE
+# -----------------------------
+st.markdown("<h2 style='text-align:center;'>MTE CALCULATOR</h2>", unsafe_allow_html=True)
 
 # -----------------------------
-# MAIN INPUT SECTION
+# MAIN BOX
 # -----------------------------
-st.markdown('<div class="main-box">', unsafe_allow_html=True)
+st.markdown('<div class="container-box">', unsafe_allow_html=True)
 
-# KEN NO + SEARCH
-st.markdown("**KEN NO**")
+# KEN NUMBER
+st.write("Ken number")
+
 col1, col2 = st.columns([3,1])
 
 with col1:
-    st.text_input("", placeholder="Enter KEN Number", label_visibility="collapsed")
+    ken = st.text_input("", placeholder="Enter KEN number")
 
 with col2:
-    st.button("SEARCH", use_container_width=True)
+    st.button("search", key="search1")
 
 # ELECTRIFICATION
-st.markdown("**ELECTRIFICATION**")
-st.text_input("", placeholder="Electrification Type", label_visibility="collapsed")
+st.write("Electrification")
+
+st.text_input("", placeholder="Electrification type")
 
 # MODULES
-st.markdown("### MODULES")
+st.write("modules")
 
-col1, col2, col3 = st.columns(3)
-col1.button("Transformer Module")
-col2.button("Circuit Breaker Module")
-col3.button("Metering Module")
+c1,c2,c3 = st.columns(3)
 
-col4, col5, col6 = st.columns(3)
-col4.button("Cable Module")
-col5.button("Switchgear Module")
-col6.button("Earthing Module")
+with c1:
+    st.checkbox("", key="m1")
+
+with c2:
+    st.checkbox("", key="m2")
+
+with c3:
+    st.checkbox("", key="m3")
+
+c4,c5,c6 = st.columns(3)
+
+with c4:
+    st.checkbox("", key="m4")
+
+with c5:
+    st.checkbox("", key="m5")
+
+with c6:
+    st.checkbox("", key="m6")
 
 # REPLACEMENT ACTIONS
-st.markdown("**REPLACEMENT ACTIONS**")
-col1, col2 = st.columns([3,1])
+st.write("Replacement actions")
+
+col1, col2 = st.columns([4,1])
 
 with col1:
-    st.selectbox(
-        "",
-        ["Select Replacement Action"],
-        label_visibility="collapsed"
-    )
+    st.selectbox("",[
+        "Select replacement action",
+        "Action 1",
+        "Action 2",
+        "Action 3"
+    ])
 
 with col2:
-    st.button("SEARCH", use_container_width=True)
+    st.button("▼", key="dropdown")
 
-# CALCULATE + CLEAR
-st.markdown("<br>", unsafe_allow_html=True)
+# SELECTED ACTIONS
+st.write("selected replacements actions")
+
+st.text_area("", height=130)
+
+# BUTTONS
 col1, col2 = st.columns(2)
 
-col1.button("CALCULATE MTE", use_container_width=True)
-col2.button("CLEAR", use_container_width=True)
+with col1:
+    st.button("calculate mte", key="calc")
+
+with col2:
+    st.button("clear", key="clear")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------
-# RESULT SECTION (UI ONLY)
+# RESULT SECTION
 # -----------------------------
 st.markdown('<div class="result-box">', unsafe_allow_html=True)
 
-st.subheader("RESULT")
+st.write("result")
 
-st.write("Selected Modules:")
-st.write("Electrification:")
-st.write("Replacement Action(s):")
+st.write("ken no")
 
-st.write("Time:")
-st.write("1) Preparation time")
-st.write("2) Replacement time")
-st.write("3) Finalization time")
+st.write("modules")
 
-st.write("Manpower:")
-st.write("Overall MTE:")
+st.write("replacement action")
+
+st.write("time")
+
+st.write("1) preparation")
+
+st.write("2) replacement")
+
+st.write("3) finalisation")
+
+st.write("overall mte")
 
 st.markdown('</div>', unsafe_allow_html=True)
