@@ -47,7 +47,7 @@ unsafe_allow_html=True
 
 st.write("")
 
-# ---------- PAGE 1 ----------
+# ---------- PAGE 1 : SEARCH ----------
 if st.session_state.page == "search":
 
     st.subheader("KEN Search")
@@ -58,54 +58,50 @@ if st.session_state.page == "search":
 
         if ken.strip() == "":
             st.error("Please enter a KEN number")
+
         else:
             st.session_state.ken_number = ken
             st.session_state.electrification = f"AC 25kV | Zone: Central | Section: {ken}"
             st.session_state.page = "details"
             st.rerun()
 
-# ---------- PAGE 2 ----------
+# ---------- PAGE 2 : DETAILS ----------
 else:
 
+    # Electrification
     st.subheader("Electrification")
     st.info(st.session_state.electrification)
 
-    # ---------- MODULES ----------
+    # ---------- MODULE GRID ----------
     st.subheader("Modules")
 
     cols = st.columns(3)
 
     for i,module in enumerate(MODULES):
 
-        col = cols[i % 3]
+        col = cols[i%3]
 
-        if col.button(module, use_container_width=True):
+        selected = module in st.session_state.selected_modules
 
-            if module in st.session_state.selected_modules:
+        if col.button(module, key=module, use_container_width=True):
+
+            if selected:
                 st.session_state.selected_modules.remove(module)
             else:
                 st.session_state.selected_modules.append(module)
 
             st.rerun()
 
-    # ---------- SELECTED MODULES ----------
+    # Show selected modules
     if st.session_state.selected_modules:
 
         st.write("Selected Modules")
 
-        for i,module in enumerate(st.session_state.selected_modules):
+        for m in st.session_state.selected_modules:
+            st.write("•", m)
 
-            col1,col2 = st.columns([8,1])
-
-            col1.write(module)
-
-            if col2.button("X", key=f"remove_module{i}"):
-
-                st.session_state.selected_modules.pop(i)
-                st.rerun()
-
-    # ---------- REPLACEMENT ACTION ----------
-    st.subheader("Replacement Actions")
+    # ---------- REPLACEMENT ACTIONS ----------
+    st.subheader("Replacement Action")
 
     if len(st.session_state.selected_modules) == 0:
 
@@ -113,50 +109,37 @@ else:
 
     else:
 
-        # Search box
-        search = st.text_input("Search replacement actions")
-
         options = []
 
         for m in st.session_state.selected_modules:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        # Filter
-        if search:
-            options = [o for o in options if search.lower() in o.lower()]
+        action = st.selectbox(
+            "Select replacement action",
+            options
+        )
 
-        st.write("Select Actions")
+        if st.button("Add Action"):
 
-        for option in options:
+            if action not in st.session_state.selected_actions:
+                st.session_state.selected_actions.append(action)
 
-            checked = option in st.session_state.selected_actions
+    # ---------- DISPLAY SELECTED ACTIONS ----------
+    if st.session_state.selected_actions:
 
-            if st.checkbox(option, value=checked):
+        st.write("Selected Actions")
 
-                if option not in st.session_state.selected_actions:
-                    st.session_state.selected_actions.append(option)
+        for i,a in enumerate(st.session_state.selected_actions):
 
-            else:
+            col1,col2 = st.columns([8,1])
 
-                if option in st.session_state.selected_actions:
-                    st.session_state.selected_actions.remove(option)
+            col1.write(a)
 
-        # ---------- SHOW SELECTED ACTIONS ----------
-        if st.session_state.selected_actions:
+            if col2.button("X", key=f"remove{i}"):
 
-            st.write("Selected Replacement Actions")
-
-            for i,action in enumerate(st.session_state.selected_actions):
-
-                col1,col2 = st.columns([8,1])
-
-                col1.write(action)
-
-                if col2.button("X", key=f"remove_action{i}"):
-
-                    st.session_state.selected_actions.pop(i)
-                    st.rerun()
+                st.session_state.selected_actions.pop(i)
+                st.rerun()
 
     st.write("---")
 
