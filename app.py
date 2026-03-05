@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
@@ -22,7 +23,7 @@ if "results" not in st.session_state:
     st.session_state.results = {}
 
 # ---------- MODULE LIST ----------
-MODULES = [f"Module {i}" for i in range(1,13)]
+MODULES = [f"Module {i}" for i in range(1, 13)]
 
 REPLACEMENT_ACTIONS = [
     "Replace Component A",
@@ -34,7 +35,6 @@ REPLACEMENT_ACTIONS = [
     "Remove Old Part",
     "Test and Verify",
 ]
-
 
 # ---------- HEADER ----------
 st.markdown(
@@ -59,45 +59,41 @@ if st.session_state.page == "search":
 
         if ken.strip() == "":
             st.error("Please enter a KEN number")
+
         else:
             st.session_state.ken_number = ken
             st.session_state.electrification = f"AC 25kV | Zone: Central | Section: {ken}"
             st.session_state.page = "details"
             st.rerun()
 
-
 # ---------- PAGE 2 : DETAILS ----------
 else:
 
     # Electrification
     st.subheader("Electrification")
-
     st.info(st.session_state.electrification)
-
 
     # ---------- MODULE GRID ----------
     st.subheader("Modules")
 
     cols = st.columns(3)
 
-    for i,module in enumerate(MODULES):
+    for i, module in enumerate(MODULES):
 
-        col = cols[i%3]
+        col = cols[i % 3]
 
         selected = module in st.session_state.selected_modules
 
-        if col.button(
-            module,
-            key=module,
-            use_container_width=True,
-        ):
+        if col.button(module, key=module, use_container_width=True):
+
             if selected:
                 st.session_state.selected_modules.remove(module)
             else:
                 st.session_state.selected_modules.append(module)
 
-    st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
+            st.rerun()
 
+    st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
 
     # ---------- REPLACEMENT ACTIONS ----------
     st.subheader("Replacement Action")
@@ -113,71 +109,67 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        action = st.selectbox("Select replacement action", options)
+        # MULTISELECT (auto add)
+        selected = st.multiselect(
+            "Select replacement action",
+            options,
+            default=st.session_state.selected_actions
+        )
 
-        if st.button("Add Action"):
+        st.session_state.selected_actions = selected
 
-            if action not in st.session_state.selected_actions:
-                st.session_state.selected_actions.append(action)
-
-    # Display selected actions
+    # ---------- DISPLAY SELECTED ACTIONS ----------
     if st.session_state.selected_actions:
 
         st.write("Selected Actions")
 
-        for i,a in enumerate(st.session_state.selected_actions):
+        for i, action in enumerate(st.session_state.selected_actions):
 
-            col1,col2 = st.columns([8,1])
+            col1, col2 = st.columns([8, 1])
 
-            col1.write(a)
+            col1.write(action)
 
             if col2.button("X", key=f"remove{i}"):
+
                 st.session_state.selected_actions.pop(i)
                 st.rerun()
 
-
     st.write("---")
 
-
     # ---------- BUTTONS ----------
-    col1,col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
     if col1.button("Calculate MTE"):
 
-        if len(st.session_state.selected_modules)==0:
+        if len(st.session_state.selected_modules) == 0:
             st.error("Select at least one module")
 
-        elif len(st.session_state.selected_actions)==0:
+        elif len(st.session_state.selected_actions) == 0:
             st.error("Select at least one action")
 
         else:
 
             st.session_state.results = {
-
-                "time":"4.5 hours",
-                "manpower":"3 persons",
-                "overall":"13.5 hours",
-                "prep":"1 hour",
-                "replace":"2.5 hours",
-                "final":"1 hour"
-
+                "time": "4.5 hours",
+                "manpower": "3 persons",
+                "overall": "13.5 hours",
+                "prep": "1 hour",
+                "replace": "2.5 hours",
+                "final": "1 hour"
             }
 
             st.success("MTE Calculated")
 
-
     if col2.button("Clear"):
 
-        st.session_state.page="search"
-        st.session_state.ken_number=""
-        st.session_state.electrification=None
-        st.session_state.selected_modules=[]
-        st.session_state.selected_actions=[]
-        st.session_state.results={}
+        st.session_state.page = "search"
+        st.session_state.ken_number = ""
+        st.session_state.electrification = None
+        st.session_state.selected_modules = []
+        st.session_state.selected_actions = []
+        st.session_state.results = {}
 
         st.rerun()
-
-
 
     # ---------- RESULTS ----------
     if st.session_state.results:
@@ -195,12 +187,11 @@ else:
         st.write("Selected Replacement Actions")
 
         for a in st.session_state.selected_actions:
-            st.write("-",a)
-
+            st.write("-", a)
 
         st.write("Time")
 
-        col1,col2 = st.columns([4,1])
+        col1, col2 = st.columns([4, 1])
 
         col1.text(st.session_state.results["time"])
 
@@ -216,10 +207,10 @@ Finalisation : {st.session_state.results['final']}
 """
             )
 
-
         st.write("Man Power")
         st.text(st.session_state.results["manpower"])
 
         st.write("Overall MTE")
-
         st.success(st.session_state.results["overall"])
+```
+
