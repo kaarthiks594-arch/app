@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
@@ -227,4 +226,4 @@ Finalisation : {st.session_state.results['final']}
         st.write("Overall MTE")
 
         st.success(st.session_state.results["overall"])
-```
+
