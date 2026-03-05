@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 
 st.set_page_config(page_title="MTE Calculator", layout="centered")
@@ -69,7 +68,6 @@ if st.session_state.page == "search":
 # ---------- PAGE 2 : DETAILS ----------
 else:
 
-    # Electrification
     st.subheader("Electrification")
     st.info(st.session_state.electrification)
 
@@ -109,7 +107,6 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        # MULTISELECT (auto add)
         selected = st.multiselect(
             "Select replacement action",
             options,
@@ -212,5 +209,3 @@ Finalisation : {st.session_state.results['final']}
 
         st.write("Overall MTE")
         st.success(st.session_state.results["overall"])
-```
-
