@@ -47,7 +47,7 @@ unsafe_allow_html=True
 
 st.write("")
 
-# ---------- PAGE 1 ----------
+# ---------- PAGE 1 : KEN SEARCH ----------
 if st.session_state.page == "search":
 
     st.subheader("KEN Search")
@@ -64,9 +64,10 @@ if st.session_state.page == "search":
             st.session_state.page = "details"
             st.rerun()
 
-# ---------- PAGE 2 ----------
+# ---------- PAGE 2 : DETAILS ----------
 else:
 
+    # Electrification
     st.subheader("Electrification")
     st.info(st.session_state.electrification)
 
@@ -75,9 +76,9 @@ else:
 
     cols = st.columns(3)
 
-    for i,module in enumerate(MODULES):
+    for i, module in enumerate(MODULES):
 
-        col = cols[i%3]
+        col = cols[i % 3]
         selected = module in st.session_state.selected_modules
 
         if col.button(module, key=module, use_container_width=True):
@@ -89,8 +90,8 @@ else:
 
     st.write(f"Selected Modules: {len(st.session_state.selected_modules)}")
 
-    # ---------- REPLACEMENT ACTIONS (UPDATED) ----------
-    st.subheader("Replacement Actions")
+    # ---------- REPLACEMENT ACTIONS ----------
+    st.subheader("Replacement Action")
 
     if len(st.session_state.selected_modules) == 0:
         st.warning("Select modules first")
@@ -103,47 +104,70 @@ else:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        # LIKE VARIANTS
-        st.session_state.selected_actions = st.multiselect(
-            "Actions",
+        # function to add action automatically
+        def add_action():
+            action = st.session_state.action_select
+            if action and action not in st.session_state.selected_actions:
+                st.session_state.selected_actions.append(action)
+
+        st.selectbox(
+            "Select replacement action",
             options,
-            default=st.session_state.selected_actions
+            key="action_select",
+            on_change=add_action
         )
+
+    # ---------- SELECTED ACTIONS ----------
+    if st.session_state.selected_actions:
+
+        st.write("Selected Actions")
+
+        for i, a in enumerate(st.session_state.selected_actions):
+
+            col1, col2 = st.columns([8,1])
+
+            col1.write(a)
+
+            if col2.button("X", key=f"remove{i}"):
+                st.session_state.selected_actions.pop(i)
+                st.rerun()
 
     st.write("---")
 
     # ---------- BUTTONS ----------
-    col1,col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
     if col1.button("Calculate MTE"):
 
-        if len(st.session_state.selected_modules)==0:
+        if len(st.session_state.selected_modules) == 0:
             st.error("Select at least one module")
 
-        elif len(st.session_state.selected_actions)==0:
+        elif len(st.session_state.selected_actions) == 0:
             st.error("Select at least one action")
 
         else:
 
             st.session_state.results = {
-                "time":"4.5 hours",
-                "manpower":"3 persons",
-                "overall":"13.5 hours",
-                "prep":"1 hour",
-                "replace":"2.5 hours",
-                "final":"1 hour"
+
+                "time": "4.5 hours",
+                "manpower": "3 persons",
+                "overall": "13.5 hours",
+                "prep": "1 hour",
+                "replace": "2.5 hours",
+                "final": "1 hour"
+
             }
 
             st.success("MTE Calculated")
 
     if col2.button("Clear"):
 
-        st.session_state.page="search"
-        st.session_state.ken_number=""
-        st.session_state.electrification=None
-        st.session_state.selected_modules=[]
-        st.session_state.selected_actions=[]
-        st.session_state.results={}
+        st.session_state.page = "search"
+        st.session_state.ken_number = ""
+        st.session_state.electrification = None
+        st.session_state.selected_modules = []
+        st.session_state.selected_actions = []
+        st.session_state.results = {}
 
         st.rerun()
 
@@ -151,6 +175,7 @@ else:
     if st.session_state.results:
 
         st.write("---")
+
         st.subheader("Result")
 
         st.write("KEN Number")
@@ -162,11 +187,11 @@ else:
         st.write("Selected Replacement Actions")
 
         for a in st.session_state.selected_actions:
-            st.write("-",a)
+            st.write("-", a)
 
         st.write("Time")
 
-        col1,col2 = st.columns([4,1])
+        col1, col2 = st.columns([4,1])
 
         col1.text(st.session_state.results["time"])
 
