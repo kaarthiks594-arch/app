@@ -78,11 +78,10 @@ else:
     for i,module in enumerate(MODULES):
 
         col = cols[i % 3]
-        selected = module in st.session_state.selected_modules
 
-        if col.button(module, key=module, use_container_width=True):
+        if col.button(module, use_container_width=True):
 
-            if selected:
+            if module in st.session_state.selected_modules:
                 st.session_state.selected_modules.remove(module)
             else:
                 st.session_state.selected_modules.append(module)
@@ -105,7 +104,7 @@ else:
                 st.session_state.selected_modules.pop(i)
                 st.rerun()
 
-    # ---------- REPLACEMENT ACTIONS ----------
+    # ---------- REPLACEMENT ACTION ----------
     st.subheader("Replacement Actions")
 
     if len(st.session_state.selected_modules) == 0:
@@ -114,27 +113,39 @@ else:
 
     else:
 
+        # Search box
+        search = st.text_input("Search replacement actions")
+
         options = []
 
         for m in st.session_state.selected_modules:
             for a in REPLACEMENT_ACTIONS:
                 options.append(f"{a} - {m}")
 
-        selected = st.multiselect(
-            "Search and select replacement actions",
-            options,
-            default=st.session_state.selected_actions,
-            placeholder="Type to search actions"
-        )
+        # Filter
+        if search:
+            options = [o for o in options if search.lower() in o.lower()]
 
-        st.session_state.selected_actions = selected
+        st.write("Select Actions")
+
+        for option in options:
+
+            checked = option in st.session_state.selected_actions
+
+            if st.checkbox(option, value=checked):
+
+                if option not in st.session_state.selected_actions:
+                    st.session_state.selected_actions.append(option)
+
+            else:
+
+                if option in st.session_state.selected_actions:
+                    st.session_state.selected_actions.remove(option)
 
         # ---------- SHOW SELECTED ACTIONS ----------
         if st.session_state.selected_actions:
 
             st.write("Selected Replacement Actions")
-
-            remove_index = None
 
             for i,action in enumerate(st.session_state.selected_actions):
 
@@ -144,10 +155,8 @@ else:
 
                 if col2.button("X", key=f"remove_action{i}"):
 
-                    remove_index = i
-
-            if remove_index is not None:
-                st.session_state.selected_actions.pop(remove_index)
+                    st.session_state.selected_actions.pop(i)
+                    st.rerun()
 
     st.write("---")
 
